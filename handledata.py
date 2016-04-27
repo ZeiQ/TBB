@@ -57,7 +57,8 @@ def ExtractElementsOnDetail(driver, wantedElements):
         
     
 def ExtractDetails(detailPagerURL):
-    driver = webdriver.PhantomJS(executable_path=r'/home/hadoop/Downloads/phantomjs-2.1.1-linux-x86_64/bin/phantomjs')
+    #driver = webdriver.PhantomJS(executable_path=r'/home/hadoop/Downloads/phantomjs-2.1.1-linux-x86_64/bin/phantomjs')
+    driver = webdriver.Firefox()
     driver.get(detailPagerURL)
     if driver.current_url.startswith('https://detail.tmall.com'):
         wantedElements = {'monthly_sales': ('//li[@data-label="月销量"]/div/span[@class="tm-count"]', None), \
@@ -74,7 +75,6 @@ def ExtractDetails(detailPagerURL):
     else:
         elements = None
     if elements:
-        print driver.title + u', 月销量：' + elements['monthly_sales'] + u', 累计评论：' + elements['total_comment'] + u', 收藏：' + elements['collect_count'] + u'.'
         driver.quit()
         return elements
     else:
@@ -144,6 +144,7 @@ def Main(dataPath, itemPath):
         for originalItem in auctions:
             itemNum += 1
             try:
+                print 'Handle Pager %s, Item %s'%(pagerNum, itemNum)
                 exData = ExtractData(originalItem)
                 item = exData[0]
                 #pic = exData[1]
@@ -154,7 +155,8 @@ def Main(dataPath, itemPath):
                 picFile.close()
                 '''
                 items.append(item)
-                print 'Handle Pager %s, Item %s'%(pagerNum, itemNum) + ', detail URL is ' + item['detail_url'] + '.'
+                print 'Detail URL is ' + item['detail_url'] + '\n' + 'Detail title is ' + item['title'] + \
+                u', 月销量：' + item['monthly_sales'] + u', 累计评论：' + item['total_comment'] + u', 收藏：' + item['collect_count'] + '.'
                 sleepTime = uniform(1, 2)
                 print 'Now sleep %s sec......'%sleepTime
                 sleep(sleepTime)
