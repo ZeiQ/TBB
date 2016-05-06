@@ -14,12 +14,11 @@ def MakeURL(q, s):
     The TaoBaoBroochURL looks like that:
     https://s.taobao.com/search
     ?q=%E8%83%B8%E9%92%88
-    &stats_click=search_radio_all%3A1
     &ie=utf8
     &s=0
     '''
-    params = ('q=%s'%q, 'stats_click=search_radio_all%3A1', 'ie=utf8', 's=%s'%s)
-    taoBaoBroochURL = 'https://s.taobao.com/search?%s&%s&%s&%s'%params
+    params = ('q=%s'%q, 'ie=utf8', 's=%s'%s)
+    taoBaoBroochURL = 'https://s.taobao.com/search?%s&%s&%s'%params
     return taoBaoBroochURL
     
     
@@ -110,7 +109,8 @@ if __name__ == '__main__':
     jsonFilePath = sys.argv[1]
     pagersPath = sys.argv[2]
     errorPagersPath = sys.argv[3]
-    Main(jsonFilePath, pagersPath, errorPagersPath, 5)
+    pagersNum = 1
+    Main(jsonFilePath, pagersPath, errorPagersPath, pagersNum)
     
     
     

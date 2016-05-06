@@ -1,8 +1,9 @@
 #coding=utf8
 import json
 import urllib2
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 import os
+import sys
 from time import sleep
 from random import uniform
 from selenium import webdriver
@@ -23,7 +24,6 @@ def Download(URL):
     request.add_header('User-Agent', 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0')
     opener = urllib2.build_opener(HTTPRedirectHandlerMore)
     content = opener.open(request)
-    #content = urllib2.urlopen(request)
     return content.read()
 
     
@@ -57,8 +57,8 @@ def ExtractElementsOnDetail(driver, wantedElements):
         
     
 def ExtractDetails(detailPagerURL):
-    #driver = webdriver.PhantomJS(executable_path=r'/home/hadoop/Downloads/phantomjs-2.1.1-linux-x86_64/bin/phantomjs')
-    driver = webdriver.Firefox()
+    driver = webdriver.PhantomJS(executable_path=r'/usr/local/phantomjs-2.1.1-linux-x86_64/bin/phantomjs')
+    #driver = webdriver.Firefox()
     driver.get(detailPagerURL)
     if driver.current_url.startswith('https://detail.tmall.com'):
         wantedElements = {'monthly_sales': ('//li[@data-label="月销量"]/div/span[@class="tm-count"]', None), \
@@ -113,26 +113,24 @@ def ExtractData(originalItem):
         item['comment_count'] = originalItem['comment_count']
         item['user_id'] = originalItem['user_id']
         item['nick'] = originalItem['nick']
-        '''
         if item['pic_url'].startswith('https:') or item['pic_url'].startswith('http:'):
             pic = Download(item['pic_url'])
         else:
             pic = Download(r'https:' + item['pic_url'])
-        '''
         details = ExtractDetails(item['detail_url'])
         if details:
             item['monthly_sales'] = details['monthly_sales']
             item['total_comment'] = details['total_comment']
             item['collect_count'] = details['collect_count']
-        return (item, None) 
+        return (item, pic) 
     
     
-def Main(dataPath, itemPath):
-    if os.path.exists(itemPath) & os.path.isdir(itemPath):
+def Main(oriDataPathName, exItemsPathName, exItemPicsPath):
+    if os.path.exists(exItemPicsPath) and os.path.isdir(exItemPicsPath):
         pass
     else:
-        os.mkdir(itemPath)
-    datafile = open(dataPath, 'rb')
+        os.mkdir(exItemPicsPath)
+    datafile = open(oriDataPathName, 'rb')
     data = datafile.read()
     pagers = json.loads(data)
     pagerNum = 0
@@ -147,35 +145,31 @@ def Main(dataPath, itemPath):
                 print 'Handle Pager %s, Item %s'%(pagerNum, itemNum)
                 exData = ExtractData(originalItem)
                 item = exData[0]
-                #pic = exData[1]
-                '''
-                picPath = itemPath + r'/pic_%s_%s'%(pagerNum, itemNum)
+                pic = exData[1]
+                picPath = exItemPicsPath + r'/pic_%s_%s'%(pagerNum, itemNum)
                 picFile = open(picPath, 'wb')
                 picFile.write(pic)
                 picFile.close()
-                '''
                 items.append(item)
                 print 'Detail URL is ' + item['detail_url'] + '\n' + 'Detail title is ' + item['title'] + \
                 u', 月销量：' + item['monthly_sales'] + u', 累计评论：' + item['total_comment'] + u', 收藏：' + item['collect_count'] + '.'
                 sleepTime = uniform(1, 2)
                 print 'Now sleep %s sec......'%sleepTime
                 sleep(sleepTime)
-                
             except KeyError:
                 #pass
                 print originalItem
-    
     datafile.close()
-    newItemsFile = open(itemPath + r'newitems', 'wb')
+    newItemsFile = open(exItemsPathName, 'wb')
     newItemsFile.write(json.dumps(items))
     newItemsFile.close()
     
 
 if __name__ == '__main__':
-    
-    dataPath = r'/home/hadoop/Documents/TaobaoBrooch/items'
-    itemPath = r'/home/hadoop/Documents/TaobaoBrooch/itemsContent'
-    Main(dataPath, itemPath)
+    oriDataPathName = sys.argv[1]
+    exItemsPathName = sys.argv[2]
+    exItemPicsPath = sys.argv[3]
+    Main(oriDataPathName, exItemsPathName, exItemPicsPath)
     
     print 'Done!'
     
